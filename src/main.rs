@@ -213,6 +213,30 @@ async fn main() {
     );
     items.push(north_closed_book);
 
+    let north_big_painting_texture: Texture2D = load_texture("assets/NorthPaintingBig.png").await.unwrap();
+    let north_big_painting = Item::new(
+        Room::None,
+        "north_big_painting",
+        north_big_painting_texture,
+        Pos::new(200f32, 0f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(north_big_painting.clone());
+
+    let north_small_painting_texture: Texture2D = load_texture("assets/NorthPaintingSmall.png").await.unwrap();
+    let north_small_painting = Item::new(
+        Room::North,
+        "north_small_painting",
+        north_small_painting_texture,
+        Pos::new(460f32, 225f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(north_big_painting.clone())),
+    );
+    items.push(north_small_painting);
+
     // East Room Items
 
     let phonebooth_texture: Texture2D = load_texture("assets/PhoneBooth.png").await.unwrap();
@@ -328,8 +352,6 @@ async fn main() {
             );
 
             // Give UI go back button
-
-            // UI room-change arrows
 
             draw_texture(left_arrow, 0.0, 20.0, WHITE);
 
