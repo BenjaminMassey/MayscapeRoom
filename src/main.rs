@@ -161,7 +161,9 @@ async fn main() {
 
     let mut color_match_wires: Vec<Option<i16>> = vec![None, None, None, None];
 
-    color_match_wires = vec![Some(2), Some(3), Some(1), Some(0)]; // TODO: delete example
+    //color_match_wires = vec![Some(2), Some(3), Some(1), Some(0)]; // TODO: delete example
+
+    let mut current_wire: Option<&str> = None;
 
     // UI elements
 
@@ -568,6 +570,9 @@ async fn main() {
                 }
             }
             else if item.tag == "colormatch" {
+
+                // Render lines
+
                 let red_left = Pos::new(278.0, 65.0);
                 let red_right = Pos::new(480.0, 65.0);
                 let green_left = Pos::new(294.0, 151.0);
@@ -598,6 +603,86 @@ async fn main() {
                     let right = rights[color_match_wires[3].unwrap() as usize];
                     draw_line(orange_left.x, orange_left.y, right.x, right.y, 15.0, GRAY);
                 }
+
+                // Handle input
+
+                let mut spot_tap: Option<&str> = None;
+
+                if mouse.is_some() {
+                    let m = mouse.unwrap();
+                    println!("{}, {}", m.x, m.y);
+                    if m.x > red_left.x - 65.0 && m.x < red_left.x
+                        && m.y > red_left.y - 20.0 && m.y < red_left.y + 20.0 {
+                        spot_tap = Some("red_left");
+                    } else if m.x > green_left.x - 65.0 && m.x < green_left.x
+                        && m.y > green_left.y - 20.0 && m.y < green_left.y + 20.0 {
+                        spot_tap = Some("green_left");
+                    } else if m.x > blue_left.x - 65.0 && m.x < blue_left.x
+                        && m.y > blue_left.y - 20.0 && m.y < blue_left.y + 20.0 {
+                        spot_tap = Some("blue_left");
+                    } else if m.x > orange_left.x - 65.0 && m.x < orange_left.x
+                        && m.y > orange_left.y - 20.0 && m.y < orange_left.y + 20.0 {
+                        spot_tap = Some("orange_left");
+                    } else if m.x > red_right.x && m.x < red_right.x + 65.0
+                        && m.y > red_right.y - 20.0 && m.y < red_right.y + 20.0 {
+                        spot_tap = Some("red_right");
+                    } else if m.x > green_right.x && m.x < green_right.x + 65.0
+                        && m.y > green_right.y - 20.0 && m.y < green_right.y + 20.0 {
+                        spot_tap = Some("green_right");
+                    } else if m.x > blue_right.x && m.x < blue_right.x + 65.0
+                        && m.y > blue_right.y - 20.0 && m.y < blue_right.y + 20.0 {
+                        spot_tap = Some("blue_right");
+                    } else if m.x > orange_right.x && m.x < orange_right.x + 65.0
+                        && m.y > orange_right.y - 20.0 && m.y < orange_right.y + 20.0 {
+                        spot_tap = Some("orange_right");
+                    }
+                }
+
+                if spot_tap.is_some() {
+                    let new = spot_tap.unwrap();
+                    if current_wire.is_some() {
+                        let last = current_wire.unwrap();
+
+                        let last_parts = last.split("_").collect::<Vec<&str>>();
+                        let new_parts = new.split("_").collect::<Vec<&str>>();
+
+                        let last_is_left = last_parts[1] == "left";
+                        let new_is_left = new_parts[1] == "left";
+
+                        let mut left_string: &str = "";
+                        let mut right_string: &str = "";
+
+                        if new_is_left && !last_is_left {
+                            left_string = new_parts[0];
+                            right_string = last_parts[0];
+                        } else if !new_is_left && last_is_left {
+                            left_string = last_parts[0];
+                            right_string = new_parts[0];
+                        }
+                        if left_string.len() > 0 && right_string.len() > 0 {
+                            let index = match left_string {
+                                "red" => 0,
+                                "green" => 1,
+                                "blue" => 2,
+                                "orange" => 3,
+                                _ => 0,
+                            };
+                            let value = match right_string {
+                                "red" => 0,
+                                "green" => 1,
+                                "blue" => 2,
+                                "orange" => 3,
+                                _ => 0,
+                            };
+                            color_match_wires[index] = Some(value);
+                            current_wire = None;
+                        }
+                    }
+                    else {
+                        current_wire = Some(new);
+                    }
+                }
+
             }
 
             // Give UI to go back
@@ -609,6 +694,7 @@ async fn main() {
                 if m.x > 0.0 && m.x < 100.0 && m.y > 20.0 && m.y < 120.0 {
                     current_state = UserState::Nothing;
                     current_item = None;
+                    current_wire = None;
                 }
             }
         }
