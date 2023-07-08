@@ -36,15 +36,6 @@ enum ItemState {
     Linked,
 }
 
-struct Item {
-    tag: String,
-    texture: Texture2D,
-    position: Pos,
-    state: ItemState,
-    flavor_text: String,
-    link: Option<Box<Item>>,
-}
-
 struct Bounds {
     top_left: Pos,
     top_right: Pos,
@@ -58,13 +49,22 @@ impl Bounds {
     }
 }
 
+struct Item {
+    tag: String,
+    texture: Texture2D,
+    position: Pos,
+    state: ItemState,
+    flavor_text: Vec<String>,
+    link: Option<Box<Item>>,
+}
+
 impl Item {
     fn new(
         tag: &str,
         texture: Texture2D,
         position: Pos,
         state: ItemState,
-        flavor_text: &str,
+        flavor_text: Vec<&str>,
         link: Option<Box<Item>>,
     ) -> Self {
         Item {
@@ -72,7 +72,11 @@ impl Item {
             texture,
             position,
             state,
-            flavor_text: flavor_text.to_owned(),
+            flavor_text:
+                flavor_text
+                .into_iter()
+                .map(|a| { a.to_owned() })
+                .collect(),
             link,
         }
     }
@@ -95,6 +99,8 @@ impl Item {
 
 #[macroquad::main("EscapeRoom")]
 async fn main() {
+    let mut main_text: Vec<String> = Vec::new();
+
     let mut items: Vec<Item> = Vec::new();
 
     let door_texture: Texture2D = load_texture("assets/ExitDoor.png").await.unwrap();
@@ -102,8 +108,8 @@ async fn main() {
         "exit_door",
         door_texture,
         Pos::new(100f32, 0f32),
-        ItemState::Linked,
-        "I don't really feel like leaving the room, actually",
+        ItemState::Flavor,
+        vec!["I don't really feel like", "leaving the room, actually."],
         None, // TODO
     );
     items.push(door);
@@ -114,7 +120,7 @@ async fn main() {
         table_texture,
         Pos::new(10f32, 300f32),
         ItemState::Flavor,
-        "It's just a table, I think.",
+        vec!["It's just a table, I think."],
         None,
     );
     items.push(table);
@@ -128,15 +134,19 @@ async fn main() {
             mouse = Some(Pos::tuple(mouse_position()));
         }
 
-        for item in &items {
+        for item in &items{
             draw_texture(item.texture, item.position.x, item.position.y, WHITE);
             if mouse.is_some() {
                 if item.contains(mouse.unwrap()) {
                     if item.state == ItemState::Flavor {
-                        println!("{}", item.flavor_text);
+                        main_text = item.flavor_text.clone();
                     }
                 }
             }
+        }
+
+        for (i, text) in main_text.iter().enumerate() {
+            draw_text(&text, 20.0, 25.0 + ((i as f32) * 25.0), 30.0, WHITE);
         }
 
         next_frame().await
