@@ -159,6 +159,10 @@ async fn main() {
 
     let mut door_pad_entry: Vec<i16> = vec![1, 1, 1, 1];
 
+    let mut color_match_wires: Vec<Option<i16>> = vec![None, None, None, None];
+
+    color_match_wires = vec![Some(2), Some(3), Some(1), Some(0)]; // TODO: delete example
+
     // UI elements
 
     let left_arrow: Texture2D = load_texture("assets/ArrowLeft.png").await.unwrap();
@@ -561,6 +565,38 @@ async fn main() {
                             println!("WRONG"); // TODO: error sound
                         }
                     }
+                }
+            }
+            else if item.tag == "colormatch" {
+                let red_left = Pos::new(278.0, 65.0);
+                let red_right = Pos::new(480.0, 65.0);
+                let green_left = Pos::new(294.0, 151.0);
+                let green_right = Pos::new(479.0, 148.0);
+                let blue_left = Pos::new(299.0, 231.0);
+                let blue_right = Pos::new(480.0, 227.0);
+                let orange_left = Pos::new(309.0, 323.0);
+                let orange_right = Pos::new(478.0, 327.0);
+                let rights: Vec<Pos> = vec![
+                    red_right,
+                    green_right,
+                    blue_right,
+                    orange_right,
+                ];
+                if color_match_wires[0].is_some() {
+                    let right = rights[color_match_wires[0].unwrap() as usize];
+                    draw_line(red_left.x, red_left.y, right.x, right.y, 15.0, GRAY);
+                }
+                if color_match_wires[1].is_some() {
+                    let right = rights[color_match_wires[1].unwrap() as usize];
+                    draw_line(green_left.x, green_left.y, right.x, right.y, 15.0, GRAY);
+                }
+                if color_match_wires[2].is_some() {
+                    let right = rights[color_match_wires[2].unwrap() as usize];
+                    draw_line(blue_left.x, blue_left.y, right.x, right.y, 15.0, GRAY);
+                }
+                if color_match_wires[3].is_some() {
+                    let right = rights[color_match_wires[3].unwrap() as usize];
+                    draw_line(orange_left.x, orange_left.y, right.x, right.y, 15.0, GRAY);
                 }
             }
 
