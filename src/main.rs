@@ -41,6 +41,13 @@ enum Room {
 }
 
 #[derive(PartialEq)]
+enum UserState {
+    Nothing,
+    Looking,
+    Typing,
+}
+
+#[derive(PartialEq)]
 enum ItemState {
     Nothing,
     Flavor,
@@ -132,7 +139,7 @@ fn rotate_right(current: Room) -> Room {
 
 #[macroquad::main("EscapeRoom")]
 async fn main() {
-    
+
     // "Globals" of sorts
 
     let mut main_text: Vec<String> = Vec::new();
@@ -140,6 +147,8 @@ async fn main() {
     let mut items: Vec<Item> = Vec::new();
 
     let mut current_room: Room = Room::North;
+
+    let mut current_state: UserState = UserState::Nothing;
 
     // UI elements
 
@@ -173,6 +182,18 @@ async fn main() {
     );
     items.push(table);
 
+    let book_texture: Texture2D = load_texture("assets/Book.png").await.unwrap();
+    let book = Item::new(
+        Room::North,
+        "north_book",
+        book_texture,
+        Pos::new(50f32, 335f32),
+        ItemState::Flavor,
+        vec!["A potentially illuminating book."],
+        None,
+    );
+    items.push(book);
+
     // East Room Items
 
     let phonebooth_texture: Texture2D = load_texture("assets/PhoneBooth.png").await.unwrap();
@@ -189,7 +210,7 @@ async fn main() {
 
     loop {
 
-        // Background
+        // Background by room
 
         let bg = match current_room {
             Room::North => Color::new(103f32 / 255f32, 118f32 / 255f32, 143f32 / 255f32, 1f32),
@@ -206,55 +227,61 @@ async fn main() {
             mouse = Some(Pos::tuple(mouse_position()));
         }
 
-        // Main items loop, for drawing and clicking
+        // Handle default state of looking around the room
 
-        for item in &items {
-            if item.room != current_room {
-                continue;
-            }
+        if current_state == UserState::Nothing { 
 
-            draw_texture(item.texture, item.position.x, item.position.y, WHITE);
+            // Main items loop, for drawing and clicking
 
-            if mouse.is_some() {
-                if item.contains(mouse.unwrap()) {
-                    if item.state == ItemState::Flavor {
-                        main_text = item.flavor_text.clone();
+            for item in &items {
+                if item.room != current_room {
+                    continue;
+                }
+
+                draw_texture(item.texture, item.position.x, item.position.y, WHITE);
+
+                if mouse.is_some() {
+                    if item.contains(mouse.unwrap()) {
+                        if item.state == ItemState::Flavor {
+                            main_text = item.flavor_text.clone();
+                        }
                     }
                 }
             }
-        }
 
-        // UI room-change arrows
+            // UI room-change arrows
 
-        draw_texture(left_arrow, 0.0, 100.0, WHITE);
+            draw_texture(left_arrow, 0.0, 100.0, WHITE);
 
-        draw_texture(right_arrow, 500.0, 100.0, WHITE);
+            draw_texture(right_arrow, 500.0, 100.0, WHITE);
 
-        if mouse.is_some() {
-            let m = mouse.unwrap();
-            if m.x > 0.0 && m.x < 100.0 && m.y > 100.0 && m.y < 200.0 {
-                current_room = rotate_left(current_room);
+            if mouse.is_some() {
+                let m = mouse.unwrap();
+                if m.x > 0.0 && m.x < 100.0 && m.y > 100.0 && m.y < 200.0 {
+                    current_room = rotate_left(current_room);
+                }
+                if m.x > 500.0 && m.x < 650.0 && m.y > 100.0 && m.y < 200.0 {
+                    current_room = rotate_right(current_room);
+                }
             }
-            if m.x > 500.0 && m.x < 650.0 && m.y > 100.0 && m.y < 200.0 {
-                current_room = rotate_right(current_room);
+
+            // Draw any global text (flavor text from items)
+
+            for (i, text) in main_text.iter().enumerate() {
+                draw_text(&text, 20.0, 25.0 + ((i as f32) * 25.0), 30.0, WHITE);
             }
+
+            // Show which room in top right
+
+            let direction = match current_room {
+                Room::North => "N",
+                Room::East => "E",
+                Room::South => "S",
+                Room::West => "W",
+            };
+            draw_text(&direction, 605.0, 40.0, 50.0, RED);
+
         }
-
-        // Draw any global text (flavor text from items)
-
-        for (i, text) in main_text.iter().enumerate() {
-            draw_text(&text, 20.0, 25.0 + ((i as f32) * 25.0), 30.0, WHITE);
-        }
-
-        // Show which room in top right
-
-        let direction = match current_room {
-            Room::North => "N",
-            Room::East => "E",
-            Room::South => "S",
-            Room::West => "W",
-        };
-        draw_text(&direction, 605.0, 40.0, 50.0, RED);
 
         next_frame().await
     }
