@@ -30,6 +30,14 @@ impl Add for Pos {
 }
 
 #[derive(PartialEq)]
+enum Room {
+    North,
+    South,
+    East,
+    West,
+}
+
+#[derive(PartialEq)]
 enum ItemState {
     Nothing,
     Flavor,
@@ -50,6 +58,7 @@ impl Bounds {
 }
 
 struct Item {
+    room: Room,
     tag: String,
     texture: Texture2D,
     position: Pos,
@@ -60,6 +69,7 @@ struct Item {
 
 impl Item {
     fn new(
+        room: Room,
         tag: &str,
         texture: Texture2D,
         position: Pos,
@@ -68,6 +78,7 @@ impl Item {
         link: Option<Box<Item>>,
     ) -> Self {
         Item {
+            room,
             tag: tag.to_owned(),
             texture,
             position,
@@ -97,14 +108,46 @@ impl Item {
     }
 }
 
+fn rotate_left(current: Room) -> Room {
+    match current {
+        Room::North => Room::East,
+        Room::East => Room::South,
+        Room::South => Room::West,
+        Room::West => Room::North,
+    }
+}
+
+fn rotate_right(current: Room) -> Room {
+    match current {
+        Room::North => Room::West,
+        Room::West => Room::South,
+        Room::South => Room::East,
+        Room::East => Room::North,
+    }
+}
+
 #[macroquad::main("EscapeRoom")]
 async fn main() {
+
+    // "Globals" of sorts
+
     let mut main_text: Vec<String> = Vec::new();
 
     let mut items: Vec<Item> = Vec::new();
 
+    let mut current_room: Room = Room::North;
+
+    // UI elements
+
+    let left_arrow: Texture2D = load_texture("assets/ArrowLeft.png").await.unwrap();
+
+    let right_arrow: Texture2D = load_texture("assets/ArrowRight.png").await.unwrap();
+
+    // North room items
+
     let door_texture: Texture2D = load_texture("assets/ExitDoor.png").await.unwrap();
     let door = Item::new(
+        Room::North,
         "exit_door",
         door_texture,
         Pos::new(100f32, 0f32),
@@ -116,6 +159,7 @@ async fn main() {
 
     let table_texture: Texture2D = load_texture("assets/Table.png").await.unwrap();
     let table = Item::new(
+        Room::North,
         "north_table",
         table_texture,
         Pos::new(10f32, 300f32),
@@ -124,6 +168,20 @@ async fn main() {
         None,
     );
     items.push(table);
+
+    // East Room Items
+
+    let phonebooth_texture: Texture2D = load_texture("assets/PhoneBooth.png").await.unwrap();
+    let phonebooth = Item::new(
+        Room::East,
+        "phonebooth",
+        phonebooth_texture,
+        Pos::new(40f32, 150f32),
+        ItemState::Flavor,
+        vec!["That thar be a phonebooth."],
+        None,
+    );
+    items.push(phonebooth);
 
     loop {
         clear_background(DARKGRAY);
@@ -135,13 +193,32 @@ async fn main() {
         }
 
         for item in &items{
+            if item.room != current_room {
+                continue;
+            }
+
             draw_texture(item.texture, item.position.x, item.position.y, WHITE);
+
             if mouse.is_some() {
                 if item.contains(mouse.unwrap()) {
                     if item.state == ItemState::Flavor {
                         main_text = item.flavor_text.clone();
                     }
                 }
+            }
+        }
+
+        draw_texture(left_arrow, 0.0, 100.0, WHITE);
+
+        draw_texture(right_arrow, 500.0, 100.0, WHITE);
+
+        if mouse.is_some() {
+            let m = mouse.unwrap();
+            if m.x > 0.0 && m.x < 100.0 && m.y > 100.0 && m.y < 200.0 {
+                current_room = rotate_left(current_room);
+            }
+            if m.x > 500.0 && m.x < 650.0 && m.y > 100.0 && m.y < 200.0 {
+                current_room = rotate_right(current_room);
             }
         }
 
