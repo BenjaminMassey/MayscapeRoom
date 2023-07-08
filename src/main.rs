@@ -192,7 +192,7 @@ async fn main() {
     items.push(door);
 
     let table_texture: Texture2D = load_texture("assets/Table.png").await.unwrap();
-    let table = Item::new(
+    let north_table = Item::new(
         Room::North,
         "north_table",
         table_texture,
@@ -201,7 +201,7 @@ async fn main() {
         vec![""],
         None,
     );
-    items.push(table);
+    items.push(north_table);
 
     let north_book_texture: Texture2D = load_texture("assets/NorthBook.png").await.unwrap();
     let north_open_book = Item::new(
@@ -347,6 +347,41 @@ async fn main() {
         Some(Box::new(east_big_painting.clone())),
     );
     items.push(east_small_painting);
+
+    let east_table = Item::new(
+        Room::East,
+        "north_table",
+        table_texture,
+        Pos::new(410f32, 300f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(east_table);
+
+    let colormatch_texture: Texture2D = load_texture("assets/ColorMatch.png").await.unwrap();
+    let colormatch = Item::new(
+        Room::None,
+        "colormatch",
+        colormatch_texture,
+        Pos::new(180f32, 5f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(colormatch.clone());
+
+    let colorbox_texture: Texture2D = load_texture("assets/ColorBox.png").await.unwrap();
+    let colorbox = Item::new(
+        Room::East,
+        "colorbox",
+        colorbox_texture,
+        Pos::new(460f32, 350f32),
+        ItemState::Interact,
+        vec![""],
+        Some(Box::new(colormatch).clone()),
+    );
+    items.push(colorbox);
 
     loop {
 
