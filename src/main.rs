@@ -324,11 +324,35 @@ async fn main() {
     );
     items.push(east_closed_book);
 
+    let east_big_painting_texture: Texture2D = load_texture("assets/WashingtonBig.png").await.unwrap();
+    let east_big_painting = Item::new(
+        Room::None,
+        "east_big_painting",
+        east_big_painting_texture,
+        Pos::new(180f32, 30f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(east_big_painting.clone());
+
+    let east_small_painting_texture: Texture2D = load_texture("assets/WashingtonSmall.png").await.unwrap();
+    let east_small_painting = Item::new(
+        Room::East,
+        "east_small_painting",
+        east_small_painting_texture,
+        Pos::new(360f32, 175f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(east_big_painting.clone())),
+    );
+    items.push(east_small_painting);
+
     loop {
 
         // Background by room
 
-        let bg = match current_room {
+        let bg = match current_room { // TODO: prob shouldn't generate colors every frame
             Room::North => Color::new(103f32 / 255f32, 118f32 / 255f32, 143f32 / 255f32, 1f32),
             Room::East => Color::new(96f32 / 255f32, 105f32 / 255f32, 120f32 / 255f32, 1f32),
             Room::South => Color::new(63f32 / 255f32, 72f32 / 255f32, 87f32 / 255f32, 1f32),
