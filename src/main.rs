@@ -45,7 +45,7 @@ enum Room {
 enum UserState {
     Nothing,
     Looking,
-    Typing,
+    Interacting,
 }
 
 #[derive(PartialEq, Clone)]
@@ -74,7 +74,7 @@ impl Bounds {
     }
 }
 
-#[derive(Clone)]
+#[derive(PartialEq, Clone)]
 struct Item {
     room: Room,
     tag: String,
@@ -157,6 +157,8 @@ async fn main() {
 
     let mut current_item: Option<Item> = None;
 
+    let mut door_pad_entry: Vec<i16> = vec![1, 1, 1, 1];
+
     // UI elements
 
     let left_arrow: Texture2D = load_texture("assets/ArrowLeft.png").await.unwrap();
@@ -165,15 +167,27 @@ async fn main() {
 
     // North room items
 
+    let door_pad_texture: Texture2D = load_texture("assets/ExitDoorPad.png").await.unwrap();
+    let door_pad = Item::new(
+        Room::None,
+        "door_pad",
+        door_pad_texture,
+        Pos::new(125f32, 25f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(door_pad.clone());
+
     let door_texture: Texture2D = load_texture("assets/ExitDoor.png").await.unwrap();
     let door = Item::new(
         Room::North,
         "exit_door",
         door_texture,
         Pos::new(100f32, 0f32),
-        ItemState::Flavor,
-        vec!["I don't really feel like", "leaving the room, actually."],
-        None, // TODO
+        ItemState::Interact,
+        vec![""],
+        Some(Box::new(door_pad.clone())),
     );
     items.push(door);
 
@@ -320,6 +334,11 @@ async fn main() {
                             current_item = Some(item.clone());
                             main_text = vec!["".to_string()];
                         }
+                        else if item.state == ItemState::Interact {
+                            current_state = UserState::Interacting;
+                            current_item = Some(item.clone());
+                            main_text = vec!["".to_string()];
+                        }
                     }
                 }
             }
@@ -376,6 +395,82 @@ async fn main() {
             );
 
             // Give UI go back button
+
+            draw_texture(left_arrow, 0.0, 20.0, WHITE);
+
+            if mouse.is_some() {
+                let m = mouse.unwrap();
+                if m.x > 0.0 && m.x < 100.0 && m.y > 20.0 && m.y < 120.0 {
+                    current_state = UserState::Nothing;
+                    current_item = None;
+                }
+            }
+        }
+
+        // Handle state of interacting with object, going to be specific to item
+
+        else if current_state == UserState::Interacting {
+
+            // Do main texture drawing
+
+            let item = current_item.clone().unwrap().link.unwrap().clone();
+            draw_texture(
+                item.texture,
+                item.position.x,
+                item.position.y,
+                WHITE
+            );
+
+            // Handle specific states by item
+
+            if item.tag == "door_pad" {
+                draw_text(&door_pad_entry[0].to_string(), 200.0, 240.0, 80.0, BLACK);
+                draw_text(&door_pad_entry[1].to_string(), 285.0, 245.0, 80.0, BLACK);
+                draw_text(&door_pad_entry[2].to_string(), 370.0, 240.0, 80.0, BLACK);
+                draw_text(&door_pad_entry[3].to_string(), 445.0, 233.0, 80.0, BLACK);
+                if mouse.is_some() {
+                    let m = mouse.unwrap();
+                    if m.x > 200.0 && m.x < 250.0 && m.y > 150.0 && m.y < 285.0 {
+                        door_pad_entry[0] = (door_pad_entry[0] + 1) % 10
+                    } else if m.x > 285.0 && m.x < 335.0 && m.y > 150.0 && m.y < 285.0 {
+                        door_pad_entry[1] = (door_pad_entry[1] + 1) % 10
+                    } else if m.x > 370.0 && m.x < 420.0 && m.y > 150.0 && m.y < 285.0 {
+                        door_pad_entry[2] = (door_pad_entry[2] + 1) % 10
+                    } else if m.x > 445.0 && m.x < 495.0 && m.y > 150.0 && m.y < 285.0 {
+                        door_pad_entry[3] = (door_pad_entry[3] + 1) % 10
+                    } else if m.x > 265.0 && m.x < 392.0 && m.y > 345.0 && m.y < 390.0 {
+                        // Confirm button pressed
+                        if door_pad_entry == vec![1, 2, 3, 4] {
+
+                            // TODO: open door essentially goes over the original door
+                            //       successfully, but I'd still rather remove that
+                            //       original door: below doesn't work
+                            //items.retain(|x| x.clone() != door.clone());
+
+                            let open_door_texture: Texture2D = load_texture("assets/OpenDoor.png").await.unwrap();
+                            let open_door = Item::new(
+                                Room::North,
+                                "open_door",
+                                open_door_texture,
+                                Pos::new(100f32, 0f32),
+                                ItemState::Flavor,
+                                vec!["You know, I actually don't really", "feel like leaving, actually."],
+                                None,
+                            );
+                            items.push(open_door);
+
+                            main_text = vec!["The door opened!".to_string()];
+                            current_state = UserState::Nothing;
+                            current_item = None;
+                        }
+                        else {
+                            println!("WRONG"); // TODO: error sound
+                        }
+                    }
+                }
+            }
+
+            // Give UI to go back
 
             draw_texture(left_arrow, 0.0, 20.0, WHITE);
 
