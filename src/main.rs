@@ -43,16 +43,24 @@ async fn main() {
     let mut items: Vec<Item> = Vec::new();
 
     let door_texture: Texture2D = load_texture("assets/ExitDoor.png").await.unwrap();
-
     let door = Item::new(
         "exit_door",
         door_texture,
-        Pos::new(100f32, 20f32),
+        Pos::new(100f32, 0f32),
         "I don't really feel like leaving the room, actually",
         None,
     );
-
     items.push(door);
+
+    let table_texture: Texture2D = load_texture("assets/Table.png").await.unwrap();
+    let table = Item::new(
+        "north_table",
+        table_texture,
+        Pos::new(10f32, 350f32),
+        "It's just a table, I think.",
+        None,
+    );
+    items.push(table);
 
     loop {
         clear_background(DARKGRAY);
