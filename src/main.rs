@@ -32,8 +32,9 @@ impl Add for Pos {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 enum Room {
+    None,
     North,
     South,
     East,
@@ -47,11 +48,12 @@ enum UserState {
     Typing,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 enum ItemState {
     Nothing,
     Flavor,
-    Linked,
+    Look,
+    Interact,
 }
 
 struct Bounds {
@@ -72,6 +74,7 @@ impl Bounds {
     }
 }
 
+#[derive(Clone)]
 struct Item {
     room: Room,
     tag: String,
@@ -125,6 +128,7 @@ fn rotate_left(current: Room) -> Room {
         Room::East => Room::South,
         Room::South => Room::West,
         Room::West => Room::North,
+        Room::None => Room::None,
     }
 }
 
@@ -134,6 +138,7 @@ fn rotate_right(current: Room) -> Room {
         Room::West => Room::South,
         Room::South => Room::East,
         Room::East => Room::North,
+        Room::None => Room::None,
     }
 }
 
@@ -149,6 +154,8 @@ async fn main() {
     let mut current_room: Room = Room::North;
 
     let mut current_state: UserState = UserState::Nothing;
+
+    let mut current_item: Option<Item> = None;
 
     // UI elements
 
@@ -176,23 +183,35 @@ async fn main() {
         "north_table",
         table_texture,
         Pos::new(10f32, 300f32),
-        ItemState::Flavor,
-        vec!["It's just a table, I think."],
+        ItemState::Nothing,
+        vec![""],
         None,
     );
     items.push(table);
 
-    let book_texture: Texture2D = load_texture("assets/Book.png").await.unwrap();
-    let book = Item::new(
-        Room::North,
-        "north_book",
-        book_texture,
-        Pos::new(50f32, 335f32),
-        ItemState::Flavor,
-        vec!["A potentially illuminating book."],
+    let north_book_texture: Texture2D = load_texture("assets/NorthBook.png").await.unwrap();
+    let north_open_book = Item::new(
+        Room::None,
+        "north_open_book",
+        north_book_texture,
+        Pos::new(50f32, 50f32),
+        ItemState::Nothing,
+        vec![""],
         None,
     );
-    items.push(book);
+    items.push(north_open_book.clone());
+
+    let closed_book_texture: Texture2D = load_texture("assets/Book.png").await.unwrap();
+    let north_closed_book = Item::new(
+        Room::North,
+        "north_closed_book",
+        closed_book_texture,
+        Pos::new(50f32, 335f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(north_open_book.clone())),
+    );
+    items.push(north_closed_book);
 
     // East Room Items
 
@@ -217,6 +236,7 @@ async fn main() {
             Room::East => Color::new(96f32 / 255f32, 105f32 / 255f32, 120f32 / 255f32, 1f32),
             Room::South => Color::new(63f32 / 255f32, 72f32 / 255f32, 87f32 / 255f32, 1f32),
             Room::West => Color::new(72f32 / 255f32, 86f32 / 255f32, 110f32 / 255f32, 1f32),
+            Room::None => WHITE,
         };
         clear_background(bg);
 
@@ -244,6 +264,13 @@ async fn main() {
                     if item.contains(mouse.unwrap()) {
                         if item.state == ItemState::Flavor {
                             main_text = item.flavor_text.clone();
+                            current_state = UserState::Nothing;
+                            current_item = None;
+                        }
+                        else if item.state == ItemState::Look {
+                            current_state = UserState::Looking;
+                            current_item = Some(item.clone());
+                            main_text = vec!["".to_string()];
                         }
                     }
                 }
@@ -259,9 +286,11 @@ async fn main() {
                 let m = mouse.unwrap();
                 if m.x > 0.0 && m.x < 100.0 && m.y > 100.0 && m.y < 200.0 {
                     current_room = rotate_left(current_room);
+                    main_text = vec!["".to_string()];
                 }
                 if m.x > 500.0 && m.x < 650.0 && m.y > 100.0 && m.y < 200.0 {
                     current_room = rotate_right(current_room);
+                    main_text = vec!["".to_string()];
                 }
             }
 
@@ -278,9 +307,39 @@ async fn main() {
                 Room::East => "E",
                 Room::South => "S",
                 Room::West => "W",
+                Room::None => "Err",
             };
             draw_text(&direction, 605.0, 40.0, 50.0, RED);
 
+        }
+
+        // Handle state of currently looking at an item, should be some guarantees
+
+        else if current_state == UserState::Looking {
+
+            // Show linked item
+
+            let item = current_item.clone().unwrap().link.unwrap().clone();
+            draw_texture(
+                item.texture,
+                item.position.x,
+                item.position.y,
+                WHITE
+            );
+
+            // Give UI go back button
+
+            // UI room-change arrows
+
+            draw_texture(left_arrow, 0.0, 20.0, WHITE);
+
+            if mouse.is_some() {
+                let m = mouse.unwrap();
+                if m.x > 0.0 && m.x < 100.0 && m.y > 20.0 && m.y < 120.0 {
+                    current_state = UserState::Nothing;
+                    current_item = None;
+                }
+            }
         }
 
         next_frame().await
