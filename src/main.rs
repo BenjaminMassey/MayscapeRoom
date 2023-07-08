@@ -1,6 +1,6 @@
+use macroquad::input::{is_mouse_button_pressed, mouse_position, MouseButton};
 use macroquad::prelude::*;
 use macroquad::texture::Texture2D;
-use macroquad::input::{is_mouse_button_pressed, MouseButton, mouse_position};
 use std::ops::Add;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -14,7 +14,10 @@ impl Pos {
         Pos { x, y }
     }
     fn tuple(tuple: (f32, f32)) -> Self {
-        Pos { x: tuple.0, y: tuple.1 }
+        Pos {
+            x: tuple.0,
+            y: tuple.1,
+        }
     }
 }
 
@@ -53,7 +56,12 @@ struct Bounds {
 
 impl Bounds {
     fn new(top_left: Pos, top_right: Pos, bottom_left: Pos, bottom_right: Pos) -> Self {
-        Bounds { top_left, top_right, bottom_left, bottom_right }
+        Bounds {
+            top_left,
+            top_right,
+            bottom_left,
+            bottom_right,
+        }
     }
 }
 
@@ -83,11 +91,7 @@ impl Item {
             texture,
             position,
             state,
-            flavor_text:
-                flavor_text
-                .into_iter()
-                .map(|a| { a.to_owned() })
-                .collect(),
+            flavor_text: flavor_text.into_iter().map(|a| a.to_owned()).collect(),
             link,
         }
     }
@@ -101,10 +105,10 @@ impl Item {
     }
     fn contains(&self, point: Pos) -> bool {
         let bounds = self.bounds();
-        point.x > bounds.top_left.x &&
-            point.x < bounds.top_right.x &&
-            point.y > bounds.top_right.y &&
-            point.y < bounds.bottom_right.y
+        point.x > bounds.top_left.x
+            && point.x < bounds.top_right.x
+            && point.y > bounds.top_right.y
+            && point.y < bounds.bottom_right.y
     }
 }
 
@@ -128,7 +132,6 @@ fn rotate_right(current: Room) -> Room {
 
 #[macroquad::main("EscapeRoom")]
 async fn main() {
-
     // "Globals" of sorts
 
     let mut main_text: Vec<String> = Vec::new();
@@ -192,7 +195,7 @@ async fn main() {
             mouse = Some(Pos::tuple(mouse_position()));
         }
 
-        for item in &items{
+        for item in &items {
             if item.room != current_room {
                 continue;
             }
