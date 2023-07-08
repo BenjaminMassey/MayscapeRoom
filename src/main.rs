@@ -282,12 +282,47 @@ async fn main() {
         Room::East,
         "phonebooth",
         phonebooth_texture,
-        Pos::new(40f32, 150f32),
+        Pos::new(40f32, 50f32),
         ItemState::Flavor,
         vec!["That thar be a phonebooth."],
         None,
     );
     items.push(phonebooth);
+
+    let shelf_texture: Texture2D = load_texture("assets/Shelf.png").await.unwrap();
+    let east_shelf = Item::new(
+        Room::East,
+        "east_shelf",
+        shelf_texture,
+        Pos::new(125f32, 350f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(east_shelf);
+
+    let east_book_texture: Texture2D = load_texture("assets/EastBook.png").await.unwrap();
+    let east_book = Item::new(
+        Room::None,
+        "east_book",
+        east_book_texture,
+        Pos::new(150f32, 75f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(east_book.clone());
+
+    let east_closed_book = Item::new(
+        Room::East,
+        "east_closed_book",
+        closed_book_texture,
+        Pos::new(175f32, 300f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(east_book.clone())),
+    );
+    items.push(east_closed_book);
 
     loop {
 
