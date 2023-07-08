@@ -610,7 +610,6 @@ async fn main() {
 
                 if mouse.is_some() {
                     let m = mouse.unwrap();
-                    println!("{}, {}", m.x, m.y);
                     if m.x > red_left.x - 65.0 && m.x < red_left.x
                         && m.y > red_left.y - 20.0 && m.y < red_left.y + 20.0 {
                         spot_tap = Some("red_left");
@@ -683,6 +682,17 @@ async fn main() {
                     }
                 }
 
+                // Give result text at the bottom
+
+                let mut result_text: &str = "Err";
+
+                if color_match_wires == vec![Some(0), Some(1), Some(2), Some(3)] {
+                    result_text = "1234";
+                } else if color_match_wires == vec![Some(1), Some(0), Some(3), Some(2)] {
+                    result_text = "1776!";
+                }
+
+                draw_text(result_text, 350.0, 450.0, 50.0, WHITE);
             }
 
             // Give UI to go back
