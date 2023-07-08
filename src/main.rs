@@ -237,6 +237,30 @@ async fn main() {
     );
     items.push(north_small_painting);
 
+    let clock_big_texture: Texture2D = load_texture("assets/ClockBig.png").await.unwrap();
+    let big_clock = Item::new(
+        Room::None,
+        "big_clock",
+        clock_big_texture,
+        Pos::new(100f32, 0f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(big_clock.clone());
+
+    let clock_small_texture: Texture2D = load_texture("assets/ClockSmall.png").await.unwrap();
+    let small_clock = Item::new(
+        Room::North,
+        "small_clock",
+        clock_small_texture,
+        Pos::new(420f32, 25f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(big_clock.clone())),
+    );
+    items.push(small_clock);
+
     // East Room Items
 
     let phonebooth_texture: Texture2D = load_texture("assets/PhoneBooth.png").await.unwrap();
