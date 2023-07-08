@@ -132,6 +132,7 @@ fn rotate_right(current: Room) -> Room {
 
 #[macroquad::main("EscapeRoom")]
 async fn main() {
+    
     // "Globals" of sorts
 
     let mut main_text: Vec<String> = Vec::new();
@@ -187,13 +188,25 @@ async fn main() {
     items.push(phonebooth);
 
     loop {
-        clear_background(DARKGRAY);
+
+        // Background
+
+        let bg = match current_room {
+            Room::North => Color::new(103f32 / 255f32, 118f32 / 255f32, 143f32 / 255f32, 1f32),
+            Room::East => Color::new(96f32 / 255f32, 105f32 / 255f32, 120f32 / 255f32, 1f32),
+            Room::South => Color::new(63f32 / 255f32, 72f32 / 255f32, 87f32 / 255f32, 1f32),
+            Room::West => Color::new(72f32 / 255f32, 86f32 / 255f32, 110f32 / 255f32, 1f32),
+        };
+        clear_background(bg);
+
+        // Store mouse pos, if clicked
 
         let mut mouse: Option<Pos> = None;
-
         if is_mouse_button_pressed(MouseButton::Left) {
             mouse = Some(Pos::tuple(mouse_position()));
         }
+
+        // Main items loop, for drawing and clicking
 
         for item in &items {
             if item.room != current_room {
@@ -211,6 +224,8 @@ async fn main() {
             }
         }
 
+        // UI room-change arrows
+
         draw_texture(left_arrow, 0.0, 100.0, WHITE);
 
         draw_texture(right_arrow, 500.0, 100.0, WHITE);
@@ -225,9 +240,21 @@ async fn main() {
             }
         }
 
+        // Draw any global text (flavor text from items)
+
         for (i, text) in main_text.iter().enumerate() {
             draw_text(&text, 20.0, 25.0 + ((i as f32) * 25.0), 30.0, WHITE);
         }
+
+        // Show which room in top right
+
+        let direction = match current_room {
+            Room::North => "N",
+            Room::East => "E",
+            Room::South => "S",
+            Room::West => "W",
+        };
+        draw_text(&direction, 605.0, 40.0, 50.0, RED);
 
         next_frame().await
     }
