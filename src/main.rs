@@ -635,8 +635,8 @@ async fn main() {
     let code_textures: Vec<Texture2D> = 
         vec![
             code_grass,
-            code_beaver,
-            code_cat, // correct (2)
+            code_cat,
+            code_beaver, // correct (2)
             code_dog,
             code_apple, // correct (4)
             code_log,
@@ -1023,7 +1023,6 @@ async fn main() {
                 draw_text(&safe_entry[3].to_string(), 410.0, 120.0, 80.0, BLACK);
                 if mouse.is_some() {
                     let m = mouse.unwrap();
-                    println!("{}, {}", m.x, m.y);
                     if m.x > 200.0 && m.x < 250.0 && m.y > 90.0 && m.y < 150.0 {
                         safe_entry[0] = (safe_entry[0] + 1) % 10
                     } else if m.x > 270.0 && m.x < 330.0 && m.y > 90.0 && m.y < 150.0 {
