@@ -525,6 +525,41 @@ async fn main() {
     );
     items.push(light);
 
+    let vase_big_texture: Texture2D = load_texture("assets/VaseBig.png").await.unwrap();
+    let vase_big = Item::new(
+        Room::None,
+        "vase_big",
+        vase_big_texture,
+        Pos::new(100f32, 0f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(vase_big.clone());
+
+    let vase_small_texture: Texture2D = load_texture("assets/VaseSmall.png").await.unwrap();
+    let vase_small = Item::new(
+        Room::South,
+        "vase_small",
+        vase_small_texture,
+        Pos::new(140f32, 310f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(vase_big).clone()),
+    );
+    items.push(vase_small);
+
+    let south_table = Item::new(
+        Room::South,
+        "south_table",
+        table_texture,
+        Pos::new(100f32, 300f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(south_table);
+
     loop {
 
         // Background by room
