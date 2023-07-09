@@ -169,6 +169,8 @@ async fn main() {
 
     let mut candle_placement: Vec<i16> = vec![3, 2, 1, 0];
 
+    let mut code_entry: Vec<i16> = vec![0, 0, 0, 0];
+
     // UI elements
 
     let left_arrow: Texture2D = load_texture("assets/ArrowLeft.png").await.unwrap();
@@ -590,6 +592,62 @@ async fn main() {
     let candle_b: Texture2D = load_texture("assets/CandleB.png").await.unwrap();
     let candle_c: Texture2D = load_texture("assets/CandleC.png").await.unwrap();
     let candle_d: Texture2D = load_texture("assets/CandleD.png").await.unwrap();
+
+    let codeentry_big_texture: Texture2D = load_texture("assets/CodeEntryBig.png").await.unwrap();
+    let codeentry_big = Item::new(
+        Room::None,
+        "codeentry_big",
+        codeentry_big_texture,
+        Pos::new(25f32, 50f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(codeentry_big.clone());
+
+    let codeentry_small_texture: Texture2D = load_texture("assets/CodeEntrySmall.png").await.unwrap();
+    let codeentry_small = Item::new(
+        Room::South,
+        "codeentry_small",
+        codeentry_small_texture,
+        Pos::new(400f32, 325f32),
+        ItemState::Interact,
+        vec![""],
+        Some(Box::new(codeentry_big).clone()),
+    );
+    items.push(codeentry_small);
+
+    let code_apple: Texture2D = load_texture("assets/CodeApple.png").await.unwrap();
+    let code_beaver: Texture2D = load_texture("assets/CodeBeaver.png").await.unwrap();
+    let code_cat: Texture2D = load_texture("assets/CodeCat.png").await.unwrap();
+    let code_cactus: Texture2D = load_texture("assets/CodeCactus.png").await.unwrap();
+    let code_dog: Texture2D = load_texture("assets/CodeDog.png").await.unwrap();
+    let code_grass: Texture2D = load_texture("assets/CodeGrass.png").await.unwrap();
+    let code_log: Texture2D = load_texture("assets/CodeLog.png").await.unwrap();
+    let code_man: Texture2D = load_texture("assets/CodeMan.png").await.unwrap();
+    let code_orange: Texture2D = load_texture("assets/CodeOrange.png").await.unwrap();
+    let code_pumpkin: Texture2D = load_texture("assets/CodePumpkin.png").await.unwrap();
+    let code_raspberry: Texture2D = load_texture("assets/CodeRaspberry.png").await.unwrap();
+    let code_snail: Texture2D = load_texture("assets/CodeSnail.png").await.unwrap();
+    let code_sunflower: Texture2D = load_texture("assets/CodeSunflower.png").await.unwrap();
+
+    let code_textures: Vec<Texture2D> = 
+        vec![
+            code_apple,
+            code_beaver,
+            code_cat,
+            code_cactus,
+            code_dog,
+            code_grass,
+            code_log,
+            code_man,
+            code_orange,
+            code_pumpkin,
+            code_raspberry,
+            code_snail,
+            code_sunflower,
+        ]
+    ;
 
     loop {
 
