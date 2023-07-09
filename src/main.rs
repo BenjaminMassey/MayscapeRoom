@@ -161,9 +161,9 @@ async fn main() {
 
     let mut color_match_wires: Vec<Option<i16>> = vec![None, None, None, None];
 
-    //color_match_wires = vec![Some(2), Some(3), Some(1), Some(0)]; // TODO: delete example
-
     let mut current_wire: Option<&str> = None;
+
+    let mut phone_number: String = "".to_string();
 
     // UI elements
 
@@ -283,15 +283,27 @@ async fn main() {
 
     // East Room Items
 
+    let phone_entry_texture: Texture2D = load_texture("assets/PhoneEntry.png").await.unwrap();
+    let phone_entry = Item::new(
+        Room::None,
+        "phone_entry",
+        phone_entry_texture,
+        Pos::new(180f32, 0f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(phone_entry.clone());
+
     let phonebooth_texture: Texture2D = load_texture("assets/PhoneBooth.png").await.unwrap();
     let phonebooth = Item::new(
         Room::East,
         "phonebooth",
         phonebooth_texture,
         Pos::new(40f32, 50f32),
-        ItemState::Flavor,
-        vec!["That thar be a phonebooth."],
-        None,
+        ItemState::Interact,
+        vec![""],
+        Some(Box::new(phone_entry.clone())),
     );
     items.push(phonebooth);
 
@@ -693,6 +705,58 @@ async fn main() {
                 }
 
                 draw_text(result_text, 350.0, 450.0, 50.0, WHITE);
+            }
+
+            else if item.tag == "phone_entry" {
+                if mouse.is_some() {
+                    let m = mouse.unwrap();
+                    let mut hit: Option<&str> = None;
+                    if m.x > 274.0 && m.x < 327.0 && m.y > 128.0 && m.y < 170.0 {
+                        hit = Some("0");
+                    } else if m.x > 217.0 && m.x < 267.0 && m.y > 197.0 && m.y < 247.0 {
+                        hit = Some("1");
+                    } else if m.x > 284.0 && m.x < 330.0 && m.y > 189.0 && m.y < 241.0 {
+                        hit = Some("2");
+                    } else if m.x > 357.0 && m.x < 398.0 && m.y > 189.0 && m.y < 245.0 {
+                        hit = Some("3");
+                    } else if m.x > 221.0 && m.x < 265.0 && m.y > 268.0 && m.y < 312.0 {
+                        hit = Some("4");
+                    } else if m.x > 291.0 && m.x < 333.0 && m.y > 267.0 && m.y < 307.0 {
+                        hit = Some("5");
+                    } else if m.x > 363.0 && m.x < 405.0 && m.y > 267.0 && m.y < 307.0 {
+                        hit = Some("6");
+                    } else if m.x > 227.0 && m.x < 272.0 && m.y > 333.0 && m.y < 372.0 {
+                        hit = Some("7");
+                    } else if m.x > 296.0 && m.x < 338.0 && m.y > 328.0 && m.y < 369.0 {
+                        hit = Some("8");
+                    } else if m.x > 367.0 && m.x < 411.0 && m.y > 331.0 && m.y < 365.0 {
+                        hit = Some("9");
+                    }
+                    if hit.is_some() {
+                        let num = hit.unwrap();
+                        phone_number = phone_number + num;
+                    }
+                    else {
+                        if m.x > 460.0 && m.x < 554.0 && m.y > 183.0 && m.y < 244.0 {
+                            if phone_number == "1234" {
+                                println!("pumpkin");
+                            } else if phone_number == "8659" {
+                                println!("raspberry");
+                            } else if phone_number == "1776" {
+                                println!("sunflower");
+                            } else if phone_number == "150405040720" {
+                                println!("cactus");
+                            } else {
+                                println!("DIALTONE");
+                            }
+                            phone_number = "".to_string();
+                        } else if m.x > 460.0 && m.x < 557.0 && m.y > 263.0 && m.y < 332.0 {
+                            phone_number = "".to_string();
+                        }
+                    }
+                }
+
+                draw_text(&phone_number, 260.0, 435.0, 50.0, WHITE);
             }
 
             // Give UI to go back
