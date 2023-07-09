@@ -511,6 +511,20 @@ async fn main() {
     );
     items.push(safe_small);
 
+    // South room items
+
+    let light_texture: Texture2D = load_texture("assets/Light.png").await.unwrap();
+    let light = Item::new(
+        Room::South,
+        "light",
+        light_texture,
+        Pos::new(100f32, 0f32),
+        ItemState::Flavor,
+        vec!["An ugly but functional light fixture.", "It came with the place."],
+        None,
+    );
+    items.push(light);
+
     loop {
 
         // Background by room
@@ -676,7 +690,7 @@ async fn main() {
                                 open_door_texture,
                                 Pos::new(100f32, 0f32),
                                 ItemState::Flavor,
-                                vec!["You know, I actually don't really", "feel like leaving, actually."],
+                                vec!["You know, I don't really", "feel like leaving, actually."],
                                 None,
                             );
                             items.push(open_door);
