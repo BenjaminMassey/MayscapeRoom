@@ -165,6 +165,8 @@ async fn main() {
 
     let mut phone_number: String = "".to_string();
 
+    let mut safe_entry: Vec<i16> = vec![1, 1, 1, 1];
+
     // UI elements
 
     let left_arrow: Texture2D = load_texture("assets/ArrowLeft.png").await.unwrap();
@@ -484,6 +486,30 @@ async fn main() {
         None,
     );
     items.push(window);
+
+    let safe_big_texture: Texture2D = load_texture("assets/SafeBig.png").await.unwrap();
+    let safe_big = Item::new(
+        Room::None,
+        "safe_big",
+        safe_big_texture,
+        Pos::new(100f32, 5f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(safe_big.clone());
+
+    let safe_small_texture: Texture2D = load_texture("assets/SafeSmall.png").await.unwrap();
+    let safe_small = Item::new(
+        Room::West,
+        "safe_small",
+        safe_small_texture,
+        Pos::new(390f32, 95f32),
+        ItemState::Interact,
+        vec![""],
+        Some(Box::new(safe_big).clone()),
+    );
+    items.push(safe_small);
 
     loop {
 
@@ -842,6 +868,66 @@ async fn main() {
                 }
 
                 draw_text(&phone_number, 260.0, 435.0, 50.0, WHITE);
+            }
+
+            else if item.tag == "safe_big" {
+                draw_text(&safe_entry[0].to_string(), 200.0, 120.0, 80.0, BLACK);
+                draw_text(&safe_entry[1].to_string(), 270.0, 120.0, 80.0, BLACK);
+                draw_text(&safe_entry[2].to_string(), 340.0, 120.0, 80.0, BLACK);
+                draw_text(&safe_entry[3].to_string(), 410.0, 120.0, 80.0, BLACK);
+                if mouse.is_some() {
+                    let m = mouse.unwrap();
+                    println!("{}, {}", m.x, m.y);
+                    if m.x > 200.0 && m.x < 250.0 && m.y > 90.0 && m.y < 150.0 {
+                        safe_entry[0] = (safe_entry[0] + 1) % 10
+                    } else if m.x > 270.0 && m.x < 330.0 && m.y > 90.0 && m.y < 150.0 {
+                        safe_entry[1] = (safe_entry[1] + 1) % 10
+                    } else if m.x > 340.0 && m.x < 390.0 && m.y > 90.0 && m.y < 150.0 {
+                        safe_entry[2] = (safe_entry[2] + 1) % 10
+                    } else if m.x > 410.0 && m.x < 460.0 && m.y > 90.0 && m.y < 150.0 {
+                        safe_entry[3] = (safe_entry[3] + 1) % 10
+                    } else if m.x > 362.0 && m.x < 474.0 && m.y > 188.0 && m.y < 298.0 {
+                        // Confirm button pressed
+                        if safe_entry == vec![5, 3, 9, 4] {
+
+                            // TODO: open safe essentially goes over the original safe
+                            //       successfully, but I'd still rather remove that
+                            //       original safe: below doesn't work
+                            //items.retain(|x| x.clone() != safe_small.clone());
+
+                            let safe_big_texture: Texture2D = load_texture("assets/OpenSafeBig.png").await.unwrap();
+                            let safe_big = Item::new(
+                                Room::None,
+                                "safe_big",
+                                safe_big_texture,
+                                Pos::new(100f32, 0f32),
+                                ItemState::Nothing,
+                                vec![""],
+                                None,
+                            );
+                            items.push(safe_big.clone());
+
+                            let safe_small_texture: Texture2D = load_texture("assets/OpenSafeSmall.png").await.unwrap();
+                            let safe_small = Item::new(
+                                Room::West,
+                                "safe_small",
+                                safe_small_texture,
+                                Pos::new(390f32, 95f32),
+                                ItemState::Look,
+                                vec![""],
+                                Some(Box::new(safe_big.clone())),
+                            );
+                            items.push(safe_small);
+
+                            main_text = vec!["The safe opened!".to_string()];
+                            current_state = UserState::Nothing;
+                            current_item = None;
+                        }
+                        else {
+                            println!("WRONG"); // TODO: error sound
+                        }
+                    }
+                }
             }
 
             // Give UI to go back
