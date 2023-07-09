@@ -167,6 +167,8 @@ async fn main() {
 
     let mut safe_entry: Vec<i16> = vec![1, 1, 1, 1];
 
+    let mut candle_placement: Vec<i16> = vec![3, 2, 1, 0];
+
     // UI elements
 
     let left_arrow: Texture2D = load_texture("assets/ArrowLeft.png").await.unwrap();
@@ -559,6 +561,35 @@ async fn main() {
         None,
     );
     items.push(south_table);
+
+    let candlecase_big_texture: Texture2D = load_texture("assets/CandleCaseBig.png").await.unwrap();
+    let candlecase_big = Item::new(
+        Room::None,
+        "candlecase_big",
+        candlecase_big_texture,
+        Pos::new(100f32, 5f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(candlecase_big.clone());
+
+    let candlecase_small_texture: Texture2D = load_texture("assets/CandleCaseSmall.png").await.unwrap();
+    let candlecase_small = Item::new(
+        Room::South,
+        "candlecase_small",
+        candlecase_small_texture,
+        Pos::new(340f32, 160f32),
+        ItemState::Interact,
+        vec![""],
+        Some(Box::new(candlecase_big).clone()),
+    );
+    items.push(candlecase_small);
+
+    let candle_a: Texture2D = load_texture("assets/CandleA.png").await.unwrap();
+    let candle_b: Texture2D = load_texture("assets/CandleB.png").await.unwrap();
+    let candle_c: Texture2D = load_texture("assets/CandleC.png").await.unwrap();
+    let candle_d: Texture2D = load_texture("assets/CandleD.png").await.unwrap();
 
     loop {
 
@@ -975,6 +1006,38 @@ async fn main() {
                         else {
                             println!("WRONG"); // TODO: error sound
                         }
+                    }
+                }
+            }
+
+            else if item.tag == "candlecase_big" {
+
+                for i in 0..4 {
+                    let candle = match candle_placement[i] {
+                        0i16 => candle_a,
+                        1i16 => candle_b,
+                        2i16 => candle_c,
+                        3i16 => candle_d,
+                        _ => candle_a,
+                    };
+
+                    draw_texture(candle, 120.0 + (i as f32 * 120.0), 127.0, WHITE);
+                }
+
+                if mouse.is_some() {
+                    let m = mouse.unwrap();
+                    if m.x > 157.0 && m.x < 212.0 && m.y > 198.0 && m.y < 226.0 {
+                        let zero_orig = candle_placement[0];
+                        candle_placement[0] = candle_placement[1];
+                        candle_placement[1] = zero_orig;
+                    } else if m.x > 296.0 && m.x < 343.0 && m.y > 202.0 && m.y < 224.0 {
+                        let one_orig = candle_placement[1];
+                        candle_placement[1] = candle_placement[2];
+                        candle_placement[2] = one_orig;
+                    } else if m.x > 415.0 && m.x < 470.0 && m.y > 193.0 && m.y < 224.0 {
+                        let two_orig = candle_placement[2];
+                        candle_placement[2] = candle_placement[3];
+                        candle_placement[3] = two_orig;
                     }
                 }
             }
