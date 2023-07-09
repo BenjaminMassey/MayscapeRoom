@@ -46,6 +46,7 @@ enum UserState {
     Nothing,
     Looking,
     Interacting,
+    Complete,
 }
 
 #[derive(PartialEq, Clone)]
@@ -1131,7 +1132,7 @@ async fn main() {
                             &&  (code_entry[0] == 4 || code_entry[1] == 4 || code_entry[2] == 4 || code_entry[3] == 4) 
                             &&  (code_entry[0] == 7 || code_entry[1] == 7 || code_entry[2] == 7 || code_entry[3] == 7) 
                             &&  (code_entry[0] == 10 || code_entry[1] == 10 || code_entry[2] == 10 || code_entry[3] == 10) {
-                            println!("YAY")// TODO: win state
+                            current_state = UserState::Complete;
                         }
                         else {
                             println!("WRONG"); // TODO: error sound
@@ -1152,6 +1153,18 @@ async fn main() {
                     current_wire = None;
                 }
             }
+        }
+
+        // Handle the game being finished
+
+        else if current_state == UserState::Complete {
+            draw_text("After enough flailing around, you", 20.0, 100.0, 38.0, WHITE);
+            draw_text("finally manage to solve the secret", 20.0, 140.0, 38.0, WHITE);
+            draw_text("puzzle (ignoring an easy escape).", 20.0, 180.0, 38.0, WHITE);
+            draw_text("You find yourself even more trapped", 20.0, 220.0, 38.0, WHITE);
+            draw_text("within your room, unable to move.", 20.0, 260.0, 38.0, WHITE);
+            draw_text("I suppose this was your goal?", 20.0, 315.0, 38.0, WHITE);
+            draw_text("THE END", 200.0, 420.0, 80.0, YELLOW);
         }
 
         next_frame().await
