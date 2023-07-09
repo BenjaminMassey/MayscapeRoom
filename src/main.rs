@@ -401,6 +401,90 @@ async fn main() {
     );
     items.push(colorbox);
 
+    // West room items
+
+    let weights_big_texture: Texture2D = load_texture("assets/WeightsBig.png").await.unwrap();
+    let weight_big = Item::new(
+        Room::None,
+        "weight_big",
+        weights_big_texture,
+        Pos::new(100f32, 5f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(weight_big.clone());
+
+    let weights_small_texture: Texture2D = load_texture("assets/WeightsSmall.png").await.unwrap();
+    let weights_small = Item::new(
+        Room::West,
+        "weights_small",
+        weights_small_texture,
+        Pos::new(50f32, 300f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(weight_big).clone()),
+    );
+    items.push(weights_small);
+
+    let west_table = Item::new(
+        Room::West,
+        "west_table",
+        table_texture,
+        Pos::new(410f32, 300f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(west_table);
+
+    let paint_numbers_big_texture: Texture2D = load_texture("assets/PaintNumbersBig.png").await.unwrap();
+    let paint_numbers_big = Item::new(
+        Room::None,
+        "paint_numbers_big",
+        paint_numbers_big_texture,
+        Pos::new(100f32, 5f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(paint_numbers_big.clone());
+
+    let paint_numbers_small_texture: Texture2D = load_texture("assets/PaintNumbersSmall.png").await.unwrap();
+    let paint_numbers_small = Item::new(
+        Room::West,
+        "paint_numbers_small",
+        paint_numbers_small_texture,
+        Pos::new(460f32, 325f32),
+        ItemState::Look,
+        vec![""],
+        Some(Box::new(paint_numbers_big).clone()),
+    );
+    items.push(paint_numbers_small);
+
+    let west_shelf = Item::new(
+        Room::West,
+        "west_shelf",
+        shelf_texture,
+        Pos::new(325f32, 150f32),
+        ItemState::Nothing,
+        vec![""],
+        None,
+    );
+    items.push(west_shelf);
+
+    let window_texture: Texture2D = load_texture("assets/Window.png").await.unwrap();
+    let window = Item::new(
+        Room::West,
+        "window",
+        window_texture,
+        Pos::new(150f32, 50f32),
+        ItemState::Flavor,
+        vec!["What a nice view!"],
+        None,
+    );
+    items.push(window);
+
     loop {
 
         // Background by room
@@ -581,6 +665,7 @@ async fn main() {
                     }
                 }
             }
+
             else if item.tag == "colormatch" {
 
                 // Render lines
