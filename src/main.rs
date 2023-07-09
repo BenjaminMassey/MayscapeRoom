@@ -984,22 +984,29 @@ async fn main() {
                     }
                     if hit.is_some() {
                         let num = hit.unwrap();
+                        if phone_number == "pumpkin"
+                            || phone_number == "raspberry"
+                            || phone_number == "sunflower"
+                            || phone_number == "cactus"
+                            || phone_number == "INCORRECT" {
+                            phone_number = "".to_string();
+                        }
                         phone_number = phone_number + num;
                     }
                     else {
                         if m.x > 460.0 && m.x < 554.0 && m.y > 183.0 && m.y < 244.0 {
+                            // TOOD: real sounds
                             if phone_number == "1234" {
-                                println!("pumpkin");
+                                phone_number = "pumpkin".to_string();
                             } else if phone_number == "8659" {
-                                println!("raspberry");
+                                phone_number = "raspberry".to_string();
                             } else if phone_number == "1776" {
-                                println!("sunflower");
+                                phone_number = "sunflower".to_string();
                             } else if phone_number == "150405040720" {
-                                println!("cactus");
+                                phone_number = "cactus".to_string();
                             } else {
-                                println!("DIALTONE");
+                                phone_number = "INCORRECT".to_string();
                             }
-                            phone_number = "".to_string();
                         } else if m.x > 460.0 && m.x < 557.0 && m.y > 263.0 && m.y < 332.0 {
                             phone_number = "".to_string();
                         }
