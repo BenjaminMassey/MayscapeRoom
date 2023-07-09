@@ -1040,6 +1040,16 @@ async fn main() {
                         candle_placement[3] = two_orig;
                     }
                 }
+
+                let mut answer = "Incorrect";
+
+                if candle_placement == vec![2, 0, 3, 1] {
+                    answer = "BEAVER";
+                } else if candle_placement == vec![0, 1, 2, 3] {
+                    answer = "CAT";
+                }
+
+                draw_text(&answer, 245.0, 400.0, 50.0, YELLOW);
             }
 
             // Give UI to go back
