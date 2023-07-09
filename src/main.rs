@@ -302,7 +302,7 @@ async fn main() {
         Room::East,
         "phonebooth",
         phonebooth_texture,
-        Pos::new(40f32, 50f32),
+        Pos::new(100f32, 50f32),
         ItemState::Interact,
         vec![""],
         Some(Box::new(phone_entry.clone())),
