@@ -633,17 +633,17 @@ async fn main() {
 
     let code_textures: Vec<Texture2D> = 
         vec![
-            code_apple,
-            code_beaver,
-            code_cat,
-            code_cactus,
-            code_dog,
             code_grass,
+            code_beaver,
+            code_cat, // correct (2)
+            code_dog,
+            code_apple, // correct (4)
             code_log,
             code_man,
+            code_cactus, // correct (7)
             code_orange,
             code_pumpkin,
-            code_raspberry,
+            code_raspberry, // correct (10)
             code_snail,
             code_sunflower,
         ]
@@ -1108,6 +1108,36 @@ async fn main() {
                 }
 
                 draw_text(&answer, 245.0, 400.0, 50.0, YELLOW);
+            }
+
+            else if item.tag == "codeentry_big" {
+                draw_texture(code_textures[code_entry[0] as usize], 140.0, 230.0, WHITE);
+                draw_texture(code_textures[code_entry[1] as usize], 240.0, 230.0, WHITE);
+                draw_texture(code_textures[code_entry[2] as usize], 340.0, 230.0, WHITE);
+                draw_texture(code_textures[code_entry[3] as usize], 440.0, 230.0, WHITE);
+                if mouse.is_some() {
+                    let m = mouse.unwrap();
+                    if m.x > 140.0 && m.x < 190.0 && m.y > 180.0 && m.y < 280.0 {
+                        code_entry[0] = (code_entry[0] + 1) % code_textures.len() as i16;
+                    } else if m.x > 240.0 && m.x < 290.0 && m.y > 180.0 && m.y < 280.0 {
+                        code_entry[1] = (code_entry[1] + 1) % code_textures.len() as i16;
+                    } else if m.x > 340.0 && m.x < 390.0 && m.y > 180.0 && m.y < 280.0 {
+                        code_entry[2] = (code_entry[2] + 1) % code_textures.len() as i16;
+                    } else if m.x > 440.0 && m.x < 490.0 && m.y > 180.0 && m.y < 280.0 {
+                        code_entry[3] = (code_entry[3] + 1) % code_textures.len() as i16;
+                    } else if m.x > 224.0 && m.x < 423.0 && m.y > 386.0 && m.y < 468.0 {
+                        // Confirm button pressed
+                        if (code_entry[0] == 2 || code_entry[1] == 2 || code_entry[2] == 2 || code_entry[3] == 2)
+                            &&  (code_entry[0] == 4 || code_entry[1] == 4 || code_entry[2] == 4 || code_entry[3] == 4) 
+                            &&  (code_entry[0] == 7 || code_entry[1] == 7 || code_entry[2] == 7 || code_entry[3] == 7) 
+                            &&  (code_entry[0] == 10 || code_entry[1] == 10 || code_entry[2] == 10 || code_entry[3] == 10) {
+                            println!("YAY")// TODO: win state
+                        }
+                        else {
+                            println!("WRONG"); // TODO: error sound
+                        }
+                    }
+                }
             }
 
             // Give UI to go back
