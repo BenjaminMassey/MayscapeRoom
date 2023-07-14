@@ -1,9 +1,15 @@
+use std::ops::Add;
+use std::collections::HashMap;
+
 use macroquad::input::{is_mouse_button_pressed, mouse_position, MouseButton};
 use macroquad::prelude::*;
 use macroquad::texture::Texture2D;
-use std::ops::Add;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+use serde::Deserializer;
+use serde::de::{self, Visitor};
+use serde_derive::Deserialize;
+
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize)]
 struct Pos {
     x: f32,
     y: f32,
@@ -32,7 +38,7 @@ impl Add for Pos {
     }
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Deserialize)]
 enum Room {
     None,
     North,
@@ -49,7 +55,7 @@ enum UserState {
     Complete,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Deserialize)]
 enum ItemState {
     Nothing,
     Flavor,
@@ -57,6 +63,7 @@ enum ItemState {
     Interact,
 }
 
+#[derive(Debug, Deserialize)]
 struct Bounds {
     top_left: Pos,
     top_right: Pos,
@@ -75,15 +82,65 @@ impl Bounds {
     }
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+struct Texture(Texture2D);
+
+impl std::ops::Deref for Texture {
+    type Target = Texture2D;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+struct TextureVisitor;
+
+impl Visitor<'_> for TextureVisitor {
+    type Value = Texture;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a texture path")
+    }
+
+    fn visit_str<E: de::Error>(self, path: &str) -> Result<Self::Value, E> {
+        let texture_data = std::fs::read(path).map_err(|e| E::custom(e))?;
+        let texture = Texture2D::from_file_with_format(
+            &texture_data,
+            Some(ImageFormat::Png),
+        );
+        Ok(Texture(texture))
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Texture {
+    fn deserialize<D>(deserializer: D) -> Result<Texture, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(TextureVisitor)
+    }
+}
+
+/*
+fn main() {
+    let assets = std::fs::File::open("assets.json").unwrap();
+    let examples: Vec<Example> = serde_json::from_reader(assets).unwrap();
+    for e in &examples {
+        println!("{:?}", e);
+    }
+}
+*/
+
+
+#[derive(PartialEq, Clone, Deserialize)]
 struct Item {
     room: Room,
     tag: String,
-    texture: Texture2D,
+    texture: Texture,
     position: Pos,
     state: ItemState,
     flavor_text: Vec<String>,
-    link: Option<Box<Item>>,
+    link: Option<String>,
 }
 
 impl Item {
@@ -94,12 +151,12 @@ impl Item {
         position: Pos,
         state: ItemState,
         flavor_text: Vec<&str>,
-        link: Option<Box<Item>>,
+        link: Option<String>,
     ) -> Self {
         Item {
             room,
             tag: tag.to_owned(),
-            texture,
+            texture: Texture(texture),
             position,
             state,
             flavor_text: flavor_text.into_iter().map(|a| a.to_owned()).collect(),
@@ -200,7 +257,7 @@ async fn main() {
         Pos::new(100f32, 0f32),
         ItemState::Interact,
         vec![""],
-        Some(Box::new(door_pad.clone())),
+        Some("door_pad".to_owned()),
     );
     items.push(door);
 
@@ -236,7 +293,7 @@ async fn main() {
         Pos::new(50f32, 335f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(north_open_book.clone())),
+        Some("north_open_book".to_owned()),
     );
     items.push(north_closed_book);
 
@@ -260,7 +317,7 @@ async fn main() {
         Pos::new(460f32, 225f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(north_big_painting.clone())),
+        Some("north_big_painting".to_owned()),
     );
     items.push(north_small_painting);
 
@@ -284,7 +341,7 @@ async fn main() {
         Pos::new(420f32, 25f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(big_clock.clone())),
+        Some("big_clock".to_owned()),
     );
     items.push(small_clock);
 
@@ -310,7 +367,7 @@ async fn main() {
         Pos::new(100f32, 50f32),
         ItemState::Interact,
         vec![""],
-        Some(Box::new(phone_entry.clone())),
+        Some("phone_entry".to_owned()),
     );
     items.push(phonebooth);
 
@@ -345,7 +402,7 @@ async fn main() {
         Pos::new(175f32, 300f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(east_book.clone())),
+        Some("east_book".to_owned()),
     );
     items.push(east_closed_book);
 
@@ -369,7 +426,7 @@ async fn main() {
         Pos::new(360f32, 175f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(east_big_painting.clone())),
+        Some("east_big_painting".to_owned()),
     );
     items.push(east_small_painting);
 
@@ -404,7 +461,7 @@ async fn main() {
         Pos::new(460f32, 350f32),
         ItemState::Interact,
         vec![""],
-        Some(Box::new(colormatch).clone()),
+        Some("colormatch".to_owned()),
     );
     items.push(colorbox);
 
@@ -430,7 +487,7 @@ async fn main() {
         Pos::new(50f32, 300f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(weight_big).clone()),
+        Some("weight_big".to_string()),
     );
     items.push(weights_small);
 
@@ -465,7 +522,7 @@ async fn main() {
         Pos::new(460f32, 325f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(paint_numbers_big).clone()),
+        Some("paint_numbers_big".to_owned()),
     );
     items.push(paint_numbers_small);
 
@@ -512,7 +569,7 @@ async fn main() {
         Pos::new(390f32, 95f32),
         ItemState::Interact,
         vec![""],
-        Some(Box::new(safe_big).clone()),
+        Some("safe_big".to_owned()),
     );
     items.push(safe_small);
 
@@ -550,7 +607,7 @@ async fn main() {
         Pos::new(140f32, 310f32),
         ItemState::Look,
         vec![""],
-        Some(Box::new(vase_big).clone()),
+        Some("vase_big".to_owned()),
     );
     items.push(vase_small);
 
@@ -585,7 +642,7 @@ async fn main() {
         Pos::new(340f32, 160f32),
         ItemState::Interact,
         vec![""],
-        Some(Box::new(candlecase_big).clone()),
+        Some("candlecase_big".to_owned()),
     );
     items.push(candlecase_small);
 
@@ -614,9 +671,20 @@ async fn main() {
         Pos::new(400f32, 325f32),
         ItemState::Interact,
         vec![""],
-        Some(Box::new(codeentry_big).clone()),
+        Some("codeentry_big".to_owned()),
     );
     items.push(codeentry_small);
+
+    let mut tag_map: HashMap<String, Item> = items
+        .into_iter()
+        .map(|item| (item.tag.clone(), item))
+        .collect();
+
+    fn lookup(tag_map: &HashMap<String, Item>, option_item: &Option<Item>) -> Item {
+        let link = &option_item.as_ref().unwrap().link;
+        let tag: &str = link.as_ref().unwrap();
+        tag_map[tag].clone()
+    }
 
     let code_apple: Texture2D = load_texture("assets/CodeApple.png").await.unwrap();
     let code_beaver: Texture2D = load_texture("assets/CodeBeaver.png").await.unwrap();
@@ -676,12 +744,12 @@ async fn main() {
 
             // Main items loop, for drawing and clicking
 
-            for item in &items {
+            for item in tag_map.values() {
                 if item.room != current_room {
                     continue;
                 }
 
-                draw_texture(item.texture, item.position.x, item.position.y, WHITE);
+                draw_texture(*item.texture, item.position.x, item.position.y, WHITE);
 
                 if mouse.is_some() {
                     if item.contains(mouse.unwrap()) {
@@ -747,9 +815,9 @@ async fn main() {
 
             // Show linked item
 
-            let item = current_item.clone().unwrap().link.unwrap().clone();
+            let item = lookup(&tag_map, &current_item);
             draw_texture(
-                item.texture,
+                *item.texture,
                 item.position.x,
                 item.position.y,
                 WHITE
@@ -774,9 +842,9 @@ async fn main() {
 
             // Do main texture drawing
 
-            let item = current_item.clone().unwrap().link.unwrap().clone();
+            let item = lookup(&tag_map, &current_item);
             draw_texture(
-                item.texture,
+                *item.texture,
                 item.position.x,
                 item.position.y,
                 WHITE
@@ -818,7 +886,7 @@ async fn main() {
                                 vec!["You know, I don't really", "feel like leaving, actually."],
                                 None,
                             );
-                            items.push(open_door);
+                            tag_map.insert(open_door.tag.to_owned(), open_door);
 
                             main_text = vec!["The door opened!".to_string()];
                             current_state = UserState::Nothing;
@@ -1050,7 +1118,7 @@ async fn main() {
                                 vec![""],
                                 None,
                             );
-                            items.push(safe_big.clone());
+                            tag_map.insert(safe_big.tag.clone(), safe_big.clone());
 
                             let safe_small_texture: Texture2D = load_texture("assets/OpenSafeSmall.png").await.unwrap();
                             let safe_small = Item::new(
@@ -1060,9 +1128,9 @@ async fn main() {
                                 Pos::new(390f32, 95f32),
                                 ItemState::Look,
                                 vec![""],
-                                Some(Box::new(safe_big.clone())),
+                                Some("safe_big".to_owned()),
                             );
-                            items.push(safe_small);
+                            tag_map.insert(safe_small.tag.clone(), safe_small.clone());
 
                             main_text = vec!["The safe opened!".to_string()];
                             current_state = UserState::Nothing;
