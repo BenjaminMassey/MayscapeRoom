@@ -3,7 +3,11 @@ use macroquad::prelude::*;
 use macroquad::texture::Texture2D;
 use std::ops::Add;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+use serde::Deserializer;
+use serde::de::{self, Visitor};
+use serde_derive::Deserialize;
+
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize)]
 struct Pos {
     x: f32,
     y: f32,
@@ -32,7 +36,7 @@ impl Add for Pos {
     }
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Deserialize)]
 enum Room {
     None,
     North,
@@ -49,7 +53,7 @@ enum UserState {
     Complete,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Deserialize)]
 enum ItemState {
     Nothing,
     Flavor,
@@ -57,6 +61,7 @@ enum ItemState {
     Interact,
 }
 
+#[derive(Debug, Deserialize)]
 struct Bounds {
     top_left: Pos,
     top_right: Pos,
@@ -75,11 +80,61 @@ impl Bounds {
     }
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq)]
+struct Texture(Texture2D);
+
+impl std::ops::Deref for Texture {
+    type Target = Texture2D;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+struct TextureVisitor;
+
+impl Visitor<'_> for TextureVisitor {
+    type Value = Texture;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a texture path")
+    }
+
+    fn visit_str<E: de::Error>(self, path: &str) -> Result<Self::Value, E> {
+        let texture_data = std::fs::read(path).map_err(|e| E::custom(e))?;
+        let texture = Texture2D::from_file_with_format(
+            &texture_data,
+            Some(ImageFormat::Png),
+        );
+        Ok(Texture(texture))
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Texture {
+    fn deserialize<D>(deserializer: D) -> Result<Texture, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(TextureVisitor)
+    }
+}
+
+/*
+fn main() {
+    let assets = std::fs::File::open("assets.json").unwrap();
+    let examples: Vec<Example> = serde_json::from_reader(assets).unwrap();
+    for e in &examples {
+        println!("{:?}", e);
+    }
+}
+*/
+
+
+#[derive(PartialEq, Clone, Deserialize)]
 struct Item {
     room: Room,
     tag: String,
-    texture: Texture2D,
+    texture: Texture,
     position: Pos,
     state: ItemState,
     flavor_text: Vec<String>,
@@ -99,7 +154,7 @@ impl Item {
         Item {
             room,
             tag: tag.to_owned(),
-            texture,
+            texture: Texture(texture),
             position,
             state,
             flavor_text: flavor_text.into_iter().map(|a| a.to_owned()).collect(),
@@ -681,7 +736,7 @@ async fn main() {
                     continue;
                 }
 
-                draw_texture(item.texture, item.position.x, item.position.y, WHITE);
+                draw_texture(*item.texture, item.position.x, item.position.y, WHITE);
 
                 if mouse.is_some() {
                     if item.contains(mouse.unwrap()) {
@@ -749,7 +804,7 @@ async fn main() {
 
             let item = current_item.clone().unwrap().link.unwrap().clone();
             draw_texture(
-                item.texture,
+                *item.texture,
                 item.position.x,
                 item.position.y,
                 WHITE
@@ -776,7 +831,7 @@ async fn main() {
 
             let item = current_item.clone().unwrap().link.unwrap().clone();
             draw_texture(
-                item.texture,
+                *item.texture,
                 item.position.x,
                 item.position.y,
                 WHITE
